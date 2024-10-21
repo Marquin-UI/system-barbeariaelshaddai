@@ -89,6 +89,18 @@ const routes = [
     ]
   },
   {
+    path: '/perfil', // Corrigido o caminho
+    component: DefaultLayout,
+    children: [
+      {
+        path: '',
+        name: 'Perfil',
+        component: () => import('@/components/ProfileComp.vue'),
+        meta: { requiresAuth: true } // Ajustado para requerer autenticação
+      }
+    ]
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue')
@@ -108,7 +120,7 @@ router.beforeEach(async (to, from, next) => {
   } else if (to.matched.some((record) => record.meta.requiresGuest) && user) {
     next('/')
   } else if (to.meta.role && user && !user.roles.includes(to.meta.role)) {
-    next('/not-authorized') // Redireciona para uma página de "não autorizado"
+    next('/not-authorized')
   } else {
     next()
   }

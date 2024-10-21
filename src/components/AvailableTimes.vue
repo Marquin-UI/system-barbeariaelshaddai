@@ -30,6 +30,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { db } from '@/firebaseConfig';
@@ -116,18 +117,20 @@ const checkAvailabilityForService = (startTime, availableTimes, serviceDuration)
 
   if (startIndex === -1) return false;
 
-  let requiredSlots = Math.ceil(serviceDuration / 30); // Considerando intervalos de 30 min
-  let isAvailable = true;
+  // Calcular quantos slots de 40 minutos são necessários
+  const requiredSlots = Math.ceil(serviceDuration / 40); // 40 minutos por slot
 
-  for (let i = startIndex; i < startIndex + requiredSlots; i++) {
-    if (!timeSlots[i] || timeSlots[i][1].isBooked) {
-      isAvailable = false;
-      break;
+  // Verificar se há slots disponíveis
+  for (let i = 0; i < requiredSlots; i++) {
+    const timeSlotIndex = startIndex + i;
+    if (!timeSlots[timeSlotIndex] || timeSlots[timeSlotIndex][1].isBooked) {
+      return false; // Retorne falso se não houver disponibilidade
     }
   }
 
-  return isAvailable;
+  return true; // Todos os slots estão disponíveis
 };
+
 
 const selectService = () => {
   const service = services.value.find(o => o.id === selectedService.value);

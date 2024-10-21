@@ -74,10 +74,11 @@ function goToForgotPass() {
                     <input class="form-control" v-model="data.password" type="password" id="password"
                         placeholder="Senha" required />
                 </div>
-                <button type="submit" 
+                <button type="submit"
                     class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-1"
                     :disabled="userStore.loading"> <!-- Desabilita o botão se estiver carregando -->
-                    <span v-if="userStore.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span v-if="userStore.loading" class="spinner-border spinner-border-sm" role="status"
+                        aria-hidden="true"></span>
                     <span v-else>Partiu</span>
                     <span v-if="!userStore.loading" class="material-symbols-rounded fs-5">login</span>
                 </button>

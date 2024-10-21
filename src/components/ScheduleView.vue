@@ -30,10 +30,10 @@
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-column">
                         <h5 class="card-title"><strong>{{ appointment.name }}</strong></h5>
-                        <p class="text-muted mb-0"><strong>Contato:</strong> {{ appointment.phone }}</p>
-                        <p class="text-muted mb-0"><strong>Serviço:</strong> {{ appointment.service }}</p>
-                        <p class="text-muted mb-0"><strong>Data:</strong> {{ formatDate(appointment.dayDate) }}</p>
-                        <p class="text-muted mb-0"><strong>Horário:</strong> {{ appointment.time }}</p>
+                        <p class="text-muted mb-2"><strong>Contato:</strong> {{ appointment.phone }}</p>
+                        <p class="text-muted mb-2"><strong>Serviço:</strong> {{ appointment.service }}</p>
+                        <p class="text-muted mb-2"><strong>Data:</strong> {{ formatDate(appointment.dayDate) }}</p>
+                        <p class="text-muted mb-2"><strong>Horário:</strong> {{ appointment.time }}</p>
                         <span :class="getStatusClass(appointment.status)" class="status-badge">{{ appointment.status
                             }}</span>
                     </div>
@@ -45,11 +45,13 @@
                 <transition name="fade">
                     <div v-if="dropdownAppointmentId === appointment.id"
                         class="menu-options d-flex justify-content-around py-2">
-                        <button class="btn btn-outline-primary btn-sm" @click="openDeferModal(appointment)">
+                        <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                            @click="openDeferModal(appointment)">
                             <span class="material-symbols-rounded">schedule</span> Adiar
                         </button>
-                        <button class="btn btn-outline-danger btn-sm" @click="cancelAppointment(appointment.id)">
-                            <span class="material-symbols-rounded">cancel</span> Despachar
+                        <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
+                            @click="cancelAppointment(appointment.id)">
+                            <span class="material-symbols-rounded">cancel</span> Cancelar atendimento
                         </button>
                     </div>
                 </transition>

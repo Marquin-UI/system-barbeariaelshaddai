@@ -67,9 +67,11 @@ const fetchDays = async () => {
   }
 };
 
-// Função para buscar horários disponíveis para o dia selecionado
 const fetchAvailableTimes = async () => {
-  if (!selectedDay.value) return;
+  if (!selectedDay.value) {
+    availableTimes.value = []; // Limpa a lista de horários disponíveis
+    return;
+  }
 
   try {
     const docRef = doc(db, 'barbershop', 'dailySchedule');
@@ -88,8 +90,9 @@ const fetchAvailableTimes = async () => {
     }
   } catch (error) {
     alert.show('Erro ao buscar horários disponíveis.', 'error');
-  }
+  }   
 };
+
 
 const confirmDefer = async () => {
   if (!selectedDay.value || !selectedTime.value) {
@@ -115,6 +118,10 @@ const confirmDefer = async () => {
 
       const newTimeSlot = newDaySchedule.availableTimes[selectedTime.value];
       if (newTimeSlot) {
+        if (newTimeSlot.isBooked) {
+          alert.show('O horário selecionado já está reservado. Por favor, escolha outro horário.', 'error');
+          return;
+        }
         newTimeSlot.isBooked = true; // Marca o novo horário como reservado
       }
 
@@ -130,6 +137,7 @@ const confirmDefer = async () => {
     console.error('Erro ao adiar agendamento:', error);
   }
 };
+
 
 // Carregar os dias disponíveis ao montar o componente
 onMounted(() => {

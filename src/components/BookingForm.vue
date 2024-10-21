@@ -18,7 +18,12 @@
         </div>
         <div class="mb-3">
           <label for="selectedTime" class="form-label">Horário Selecionado</label>
-          <input v-model="localSelectedTime" type="text" class="form-control" id="selectedTime" disabled />
+          <input type="text" class="form-control" id="selectedTime" disabled :value="localSelectedTime" />
+        </div>
+        <div class="mb-3">
+          <label for="selectedService" class="form-label">Serviço Selecionado</label>
+          <input type="text" class="form-control" id="selectedService" disabled
+            :value="localSelectedService ? localSelectedService.title : 'Serviço inválido'" />
         </div>
         <button type="submit" class="btn btn-primary d-flex align-items-center gap-1 mt-4">Confirmar Agendamento <span
             class="material-symbols-rounded fs-5">check</span></button>
@@ -27,6 +32,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
@@ -99,12 +105,22 @@ const submitForm = async () => {
     try {
       const userId = userStore.user?.id;
       if (userId) {
+        // Captura o nome do serviço selecionado
+        const serviceName = localSelectedService.value ? localSelectedService.value.title : null;
+        if (!serviceName) {
+          alert.show('Serviço não selecionado.', 'error');
+          return;
+        }
+
+        // Log para verificar o serviço selecionado
+        console.log('O serviço selecionado foi:', serviceName);
+
         await setDoc(doc(db, 'bookings', userId), {
           ...formData.value,
           day: localSelectedDay.value.day,
           dayDate: localSelectedDay.value.dayDate,
           time: localSelectedTime.value,
-          service: localSelectedService.value.id,
+          service: serviceName, // Salva o nome do serviço
           userId: userId
         });
 
@@ -115,7 +131,7 @@ const submitForm = async () => {
 
         const dayIndex = schedule.findIndex(o => {
           return o.day === localSelectedDay.value.day
-            && o.availableTimes[localSelectedTime.value]
+            && o.availableTimes[localSelectedTime.value];
         });
 
         if (dayIndex === -1) {
@@ -126,26 +142,30 @@ const submitForm = async () => {
         const day = schedule[dayIndex];
         const serviceDuration = localSelectedService.value.duration;
 
+        // Lógica de agendamento
         if (serviceDuration < 40) {
+          // Para serviços com duração menor que 40 minutos
           const newDate = dayjs(dayjs().format('YYYY-MM-DD ') + localSelectedTime.value)
             .add(serviceDuration, 'minute').format('HH:mm');
 
-          day.availableTimes[newDate] = { isBooked: false };
-          day.availableTimes[localSelectedTime.value].isBooked = true;
-
+          day.availableTimes[newDate] = { isBooked: false }; // Define o novo horário como disponível
+          day.availableTimes[localSelectedTime.value].isBooked = true; // Marca o horário selecionado como ocupado
         } else {
-          const places = Math.ceil(serviceDuration / 40);
-          for (let i = 0; i < places; i++) {
+          // Para serviços longos
+          const requiredSlots = Math.ceil(serviceDuration / 40);
+          for (let i = 0; i < requiredSlots; i++) {
             const nextTime = dayjs(dayjs().format('YYYY-MM-DD ') + localSelectedTime.value)
               .add(i * 40, 'minute').format('HH:mm');
 
+            // Verifica se o horário subsequente está ocupado
             if (day.availableTimes[nextTime]?.isBooked) {
-              alert.show('Horários subsequentes j  estão marcados.', 'error');
+              alert.show('Horários subsequentes já estão marcados.', 'error');
               return;
             }
           }
 
-          for (let i = 0; i < places; i++) {
+          // Marcar os horários como ocupados
+          for (let i = 0; i < requiredSlots; i++) {
             const nextTime = dayjs(dayjs().format('YYYY-MM-DD ') + localSelectedTime.value)
               .add(i * 40, 'minute').format('HH:mm');
             day.availableTimes[nextTime].isBooked = true;
@@ -162,17 +182,19 @@ const submitForm = async () => {
 
         setTimeout(() => {
           window.location.reload();
-        }, 2000);
+        }, 1000);
       } else {
-        alert.show('Usu rio não autenticado.', 'error');
+        alert.show('Usuário não autenticado.', 500);
       }
     } catch (error) {
       alert.show('Erro ao confirmar agendamento.', 'error');
+      console.error('Erro ao confirmar agendamento:', error);
     }
   } else {
-    alert.show('Por favor, selecione um hor rio.', 'error');
+    alert.show('Por favor, selecione um horário.', 'error');
   }
 };
+
 
 </script>
 

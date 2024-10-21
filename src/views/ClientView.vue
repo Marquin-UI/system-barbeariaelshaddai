@@ -1,9 +1,8 @@
 <template>
   <div class="container">
-    <h1 class="text-center primary mb-5">Agendamento</h1>
+    <h1 class="text-center primary mb-3">Área de Agendamento</h1>
 
     <div class="availability-section mb-5">
-      <h2 class="mb-3">Escolha um dia e horário</h2>
       <AvailableTime @select="selectTime" @selectDay="selectDay" @selectService="selectService"
         :reset="resetSelection" />
     </div>
@@ -14,7 +13,7 @@
         @submit="bookAppointment" @close="handleClose" />
     </div>
 
-    <div v-else class="alert alert-info text-center d-flex align-items-center justify-content-center gap-1">
+    <div v-else class="alert alert-warning text-center d-flex align-items-center justify-content-center gap-1">
       <span class="material-symbols-rounded">info</span>
       Selecione um horário antes de preencher o formulário.
     </div>

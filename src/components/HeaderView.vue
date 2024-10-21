@@ -17,6 +17,7 @@ const userOptionsVisible = ref(false);
 const userType = ref('');
 const formattedLastLogin = ref('');
 
+
 const toggleUserOptions = () => {
     userOptionsVisible.value = !userOptionsVisible.value;
 };
@@ -53,6 +54,9 @@ const updateUserInfo = () => {
     }
 };
 
+const goToProfile = () => {
+    router.replace('/perfil'); // Corrigido o caminho da rota
+};
 onMounted(() => {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -81,16 +85,12 @@ const logout = async () => {
 };
 </script>
 
-
-
 <template>
     <header class="d-flex w-100 align-items-center justify-content-between px-3 py-2">
         <div class="d-flex align-items-center gap-2">
-            <!-- <img src="@/assets/imgs/logoBES.jpeg" alt="Logo" width="50" height="50" /> -->
 
-            <h2 class="mb-0">Barberia El Shaddai</h2>
+            <a href="/" class="text-decoration-none text-dark fs-4 fw-bold">Barbearia El Shaddai</a>
         </div>
-
 
         <div class="dropdown position-relative">
             <img :src="avatarSrc" alt="Avatar" class="rounded-circle" width="45" height="45" @click="toggleUserOptions"
@@ -105,6 +105,16 @@ const logout = async () => {
                     </div>
                 </div>
                 <div class="profile-body p-1">
+                    <!-- Novo item: Ir para o perfil -->
+                    <div class="dropdown-item d-flex align-items-start gap-2 p-2" @click="goToProfile">
+                        <span class="material-symbols-rounded"> person </span>
+                        <div>
+                            <h6 class="mb-0">Perfil</h6>
+                            <small>Ver informações do perfil</small>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Usuário -->
                     <div class="dropdown-item d-flex align-items-start gap-2 p-2">
                         <span class="material-symbols-rounded"> account_circle </span>
                         <div>
@@ -112,6 +122,8 @@ const logout = async () => {
                             <small>{{ userType }}</small>
                         </div>
                     </div>
+
+                    <!-- Último Acesso -->
                     <div class="dropdown-item d-flex align-items-start gap-2 p-2">
                         <span class="material-symbols-rounded"> schedule </span>
                         <div>

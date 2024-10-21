@@ -64,7 +64,7 @@ function btnClose() {
           <span :class="information[1]" :style="{ 'width': `${pos}%`, 'transition': `all ${delay}ms` }"></span>
         </span>
         <div class="p-3">
-          <pre class="fs-6 m-0" style="font-family: 'Inter';">{{ alert.message }}</pre>
+          <div class="fs-6 m-0 alert-message" style="font-family: 'Inter';">{{ alert.message }}</div>
         </div>
       </div>
     </div>
@@ -86,5 +86,10 @@ function btnClose() {
 #alert.active {
   opacity: 1;
   visibility: visible;
+}
+
+.alert-message {
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 </style>
