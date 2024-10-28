@@ -23,15 +23,15 @@
       <ul class="list-group">
         <li v-for="appointment in appointments" :key="appointment.id" class="list-group-item">
           <strong>{{ formatDate(appointment.dayDate) }}</strong> às {{ appointment.time }}
-          <span class="text-success">{{ appointment.status }}</span>
+          <span :class="appointment.isAttended ? 'text-success' : 'text-danger'">{{ appointment.isAttended ? 'Atendido'
+            : 'Não Atendido' }}</span>
         </li>
       </ul>
       <div v-if="appointments.length === 0"
         class="alert alert-info text-center mt-3 d-flex align-items-center gap-1 justify-content-center">
         <span class="material-symbols-rounded">calendar_today</span>
-        Você ainda não tem agendamentos.
+        Você ainda não tem agendamentos. Seu status é: <span class="text-success">{{ userStatus }}</span>
       </div>
-
     </div>
   </div>
 </template>
@@ -50,6 +50,7 @@ const selectedDay = ref(null);
 const selectedService = ref(null);
 const resetSelection = ref(false);
 const appointments = ref([]);
+const userStatus = ref(""); // Adiciona uma ref para armazenar o status do usuário
 const userStore = useUserStore(); // Inicializa o userStore
 
 const selectDay = (day) => {
@@ -63,7 +64,6 @@ const selectTime = (time) => {
 const selectService = (service) => {
   selectedService.value = service;
 };
-
 
 const handleClose = (payload) => {
   if (payload.clearSelection) {
@@ -89,6 +89,15 @@ const loadAppointments = () => {
         ...doc.data(),
       }));
       console.log(appointments.value); // Log dos agendamentos
+    });
+
+    // Carrega o status do usuário
+    const statusQuery = query(collection(db, 'users'), where('id', '==', userId));
+    onSnapshot(statusQuery, (querySnapshot) => {
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        userStatus.value = userDoc.data().status; // Assume que o status está armazenado aqui
+      }
     });
   } else {
     console.error('Usuário não está autenticado ou ID do usuário não encontrado.');

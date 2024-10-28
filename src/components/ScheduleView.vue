@@ -8,6 +8,7 @@
                         <option value="">Todos</option>
                         <option value="adiado">Adiado</option>
                         <option value="despachado">Despachado</option>
+                        <option value="finalizado">Finalizado</option>
                     </select>
                     <button class="btn btn-sm btn-danger" @click="toggleActionsMenu">
                         <span class="material-symbols-rounded">delete</span> Limpar
@@ -25,7 +26,7 @@
             </div>
         </transition>
 
-        <div v-if="filteredAppointments.length > 0" class="appointments-list">
+        <div class="appointments-list">
             <div class="card appointment-card mb-3" v-for="appointment in filteredAppointments" :key="appointment.id">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-column">
@@ -34,8 +35,8 @@
                         <p class="text-muted mb-2"><strong>Serviço:</strong> {{ appointment.service }}</p>
                         <p class="text-muted mb-2"><strong>Data:</strong> {{ formatDate(appointment.dayDate) }}</p>
                         <p class="text-muted mb-2"><strong>Horário:</strong> {{ appointment.time }}</p>
-                        <span :class="getStatusClass(appointment.status)" class="status-badge">{{ appointment.status
-                            }}</span>
+                        <span class="text-muted mb-2"><strong>Status:</strong> {{ appointment.status }}</span>
+
                     </div>
                     <button class="btn btn-sm btn-icon" @click="toggleDropdown(appointment.id)">
                         <span class="material-symbols-rounded">more_vert</span>
@@ -45,20 +46,21 @@
                 <transition name="fade">
                     <div v-if="dropdownAppointmentId === appointment.id"
                         class="menu-options d-flex justify-content-around py-2">
-                        <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
-                            @click="openDeferModal(appointment)">
-                            <span class="material-symbols-rounded">schedule</span> Adiar
-                        </button>
                         <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
                             @click="cancelAppointment(appointment.id)">
                             <span class="material-symbols-rounded">cancel</span> Cancelar atendimento
                         </button>
+                        <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                            @click="finalizeAppointment(appointment.id)">
+                            <span class="material-symbols-rounded">done</span> Finalizar atendimento
+                        </button>
+
                     </div>
                 </transition>
             </div>
         </div>
 
-        <NothingHere v-else />
+        <NothingHere v-if="filteredAppointments.length === 0" />
 
         <DeferModal v-if="isDeferModalOpen" :appointment="deferAppointmentData" @close="closeDeferModal"
             @confirm="deferAppointment" />
@@ -71,7 +73,6 @@ import { collection, onSnapshot, query, doc, updateDoc, writeBatch } from 'fireb
 import { db } from '@/firebaseConfig.js';
 import { useAlert } from '@/stores/alert';
 import NothingHere from '@/components/NothingHere.vue';
-import DeferModal from '@/components/DeferModal.vue';
 
 const appointments = ref([]);
 const dropdownAppointmentId = ref(null);
@@ -101,7 +102,7 @@ const loadAppointments = () => {
                     service: data.service,
                     dayDate: data.dayDate,
                     time: data.time,
-                    status: data.status,
+                    status: data.status || (data.isAttended ? 'finalizado' : 'pendente'),
                 };
             });
         });
@@ -155,20 +156,19 @@ const clearAppointments = async (filter) => {
     }
 };
 
-const getStatusClass = (status) => {
-    return {
-        'status-adiado': status === 'adiado',
-        'status-despachado': status === 'despachado',
-    };
-};
+// const getStatusClass = (status) => {
+//     if (status === 'adiado') {
+//         return 'status-adiado';
+//     } else if (status === 'despachado') {
+//         return 'status-despachado';
+//     } else if (status === 'finalizado') {
+//         return 'status-finalizado';
+//     }
+//     return '';
+// };
 
 const toggleDropdown = (appointmentId) => {
     dropdownAppointmentId.value = dropdownAppointmentId.value === appointmentId ? null : appointmentId;
-};
-
-const openDeferModal = (appointment) => {
-    deferAppointmentData.value = appointment;
-    isDeferModalOpen.value = true;
 };
 
 const closeDeferModal = () => {
@@ -199,6 +199,22 @@ const cancelAppointment = async (id) => {
         console.error('Erro ao despachar agendamento:', error);
     }
 };
+
+const finalizeAppointment = async (id) => {
+    try {
+        const docRef = doc(db, 'bookings', id);
+        // Atualiza isAttended para true
+        await updateDoc(docRef, { isAttended: true });
+        // Atualiza o estado local do agendamento
+        appointments.value = appointments.value.map(app => app.id === id ? { ...app, isAttended: true } : app);
+        alert.show('Agendamento finalizado com sucesso!', 200);
+    } catch (error) {
+        alert.show('Erro ao finalizar agendamento.', 500);
+        console.error('Erro ao finalizar agendamento:', error);
+    }
+};
+
+
 
 const toggleActionsMenu = () => {
     showActionsMenu.value = !showActionsMenu.value;
@@ -247,12 +263,6 @@ onMounted(loadAppointments);
     color: #000;
 }
 
-.status-badge {
-    margin-top: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-weight: bold;
-}
 
 .status-adiado {
     background-color: #ffc107;
